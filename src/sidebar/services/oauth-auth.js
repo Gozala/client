@@ -148,12 +148,36 @@ function auth($http, $rootScope, $window, OAuthClient,
       return Promise.resolve(client);
     }
     return apiRoutes.links().then(links => {
-      client = new OAuthClient($http, {
-        clientId: settings.oauthClientId,
-        authorizationEndpoint: links['oauth.authorize'],
-        revokeEndpoint: links['oauth.revoke'],
-        tokenEndpoint: tokenUrl,
-      });
+      // client = new OAuthClient($http, {
+      //   clientId: settings.oauthClientId,
+      //   authorizationEndpoint: links['oauth.authorize'],
+      //   revokeEndpoint: links['oauth.revoke'],
+      //   tokenEndpoint: tokenUrl,
+      // });
+      class Client {
+        exchangeAuthCode() {
+          debugger
+          return Promise.resolve(null)
+        }
+        exchangeGrantToken() {
+          debugger
+          return Promise.resolve(null)
+        }
+        revokeToken() {
+          debugger
+          return Promise.resolve(null)
+        }
+        refreshToken() {
+          debugger
+          return Promise.resolve(null)
+        }
+        authorize() {
+          debugger
+          return Promise.resolve(null)
+        }
+      }
+      client = new Client();
+
       return client;
     });
   }

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <base href="/" />
+  </head>
+  <body>
+    <hypothesis-app></hypothesis-app>
+    <script
+      class="js-hypothesis-config js-hypothesis-settings"
+      type="application/json"
+    >
+      {
+        "buildType": "dev",
+        "assetRoot": "../../",
+
+        "apiUrl": "dat://hypothesis.hashbase.io/api",
+        "authDomain": "dat://id.hashbase.io/auth",
+        "serviceUrl": "dat://hypothesis.hashbase.io/service",
+        "websocketUrl": "dat://hypothesis.hashbase.io/ws",
+
+
+        "browserIsBeaker": true,
+        "appType": "beaker-app"
+      }
+    </script>
+
+    <script src="/build/boot.js"></script>
+  </body>
+</html>

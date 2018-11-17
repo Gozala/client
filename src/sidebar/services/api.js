@@ -174,6 +174,19 @@ function createAPICall($http, $q, links, route, tokenGetter) {
   };
 }
 
+function createAPICall2($http, $q, links, route, tokenGetter, fn) {
+  return (params, data, options={}) =>
+    new Promise((resolve, reject) => {
+      console.log(">>>", route, params, data, options)
+      const data = fn()
+      console.log("<<<", route, data, params, data, options)
+      if (options.includeMetadata) {
+        return resolve({ data, token: "accessToken" })
+      } else {
+        return resolve(data)
+      }
+    })
+}
 /**
  * API client for the Hypothesis REST API.
  *
@@ -197,8 +210,8 @@ function createAPICall($http, $q, links, route, tokenGetter) {
 // @ngInject
 function api($http, $q, apiRoutes, auth) {
   const links = apiRoutes.routes();
-  function apiCall(route) {
-    return createAPICall($http, $q, links, route, auth.tokenGetter);
+  function apiCall(route, fn) {
+    return createAPICall2($http, $q, links, route, auth.tokenGetter, fn);
   }
 
   return {
@@ -218,11 +231,46 @@ function api($http, $q, apiRoutes, auth) {
       },
     },
     groups: {
-      list: apiCall('groups.read'),
+      list: apiCall('group.list', () => [{
+        "name": "Public",
+        "links": {
+          "html": "https://hypothes.is/groups/__world__/public"
+        },
+        "id": "__world__",
+        "groupid": null,
+        "scoped": false,
+        "organization": {
+          "default": true,
+          "logo": "https://hypothes.is/organizations/__default__/logo",
+          "id": "__default__",
+          "name": "Hypothesis"
+        },
+        "type": "open",
+        "public": true
+      }]),
     },
     profile: {
       groups: apiCall('profile.groups'),
-      read: apiCall('profile.read'),
+      read: apiCall('profile.read', (params, data, options) => ({
+        "user_info": {
+          "display_name": "gozala"
+        },
+        "preferences": {},
+        "groups": [{
+          "public": true,
+          "name": "Public",
+          "id": "__world__"
+        }],
+        "userid": "acct:gozala@hypothes.is",
+        "authority": "hypothes.is",
+        "features": {
+          "api_render_user_info": true,
+          "filter_highlights": false,
+          "overlay_highlighter": false,
+          "embed_cachebuster": false,
+          "client_display_names": false
+        }
+      })),
       update: apiCall('profile.update'),
     },
 

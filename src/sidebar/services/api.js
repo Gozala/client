@@ -177,13 +177,13 @@ function createAPICall($http, $q, links, route, tokenGetter) {
 function createAPICall2($http, $q, links, route, tokenGetter, fn) {
   return (params, data, options={}) =>
     new Promise((resolve, reject) => {
-      console.log(">>>", route, params, data, options)
-      const data = fn()
-      console.log("<<<", route, data, params, data, options)
+      console.log(`>>> ${route}`, route, params, data, options)
+      const response = { data: fn(), token: "accessToken" }
+      console.log(`<<< ${route}`, response, data, params, data, options)
       if (options.includeMetadata) {
-        return resolve({ data, token: "accessToken" })
+        return resolve(response)
       } else {
-        return resolve(data)
+        return resolve(response.data)
       }
     })
 }
@@ -241,7 +241,7 @@ function api($http, $q, apiRoutes, auth) {
         "scoped": false,
         "organization": {
           "default": true,
-          "logo": "https://hypothes.is/organizations/__default__/logo",
+          "logo": "/client/organizations/__default__/logo.svg",
           "id": "__default__",
           "name": "Hypothesis"
         },

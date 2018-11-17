@@ -7,15 +7,18 @@
     </style>
   </head>
   <body>
-    <script type="application/json" class="js-hypothesis-config">
-      {
-        "openSidebar": true,
-        "assetRoot": "../../",
-        "sidebarAppUrl": "../../client/app.html"
+    <script type="module" src="/client/embed.js"></script>
+    <!--
+      <script type="application/json" class="js-hypothesis-config">
+        {
+          "openSidebar": true,
+          "assetRoot": "../../",
+          "sidebarAppUrl": "../../client/app.html"
 
-      }
-    </script>
-    <script type="text/javascript" src="../../build/boot.js"></script>
+        }
+      </script>
+      <script type="text/javascript" src="../../build/boot.js"></script>
+    -->
     <script type="nomodule">
       // This is the origin of the "h" service that delivers the client.
       import { CLIENT_ORIGIN } from "../client.js"

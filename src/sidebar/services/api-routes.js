@@ -32,8 +32,7 @@ function apiRoutes($http, settings) {
    */
   function routes() {
     if (!routeCache) {
-      // routeCache = retryPromiseOperation(() => getJSON(settings.apiUrl))
-      routeCache = Promise.resolve({"links": {"profile": {"read": {"url": "https://hypothes.is/api/profile", "method": "GET", "desc": "Fetch the user's profile"}, "update": {"url": "https://hypothes.is/api/profile", "method": "PATCH", "desc": "Update a user's preferences"}}, "search": {"url": "https://hypothes.is/api/search", "method": "GET", "desc": "Search for annotations"}, "group": {"member": {"add": {"url": "https://hypothes.is/api/groups/:pubid/members/:userid", "method": "POST", "desc": "Add the user in the request params to a group."}, "delete": {"url": "https://hypothes.is/api/groups/:pubid/members/:userid", "method": "DELETE", "desc": "Remove the current user from a group."}}}, "links": {"url": "https://hypothes.is/api/links", "method": "GET", "desc": "URL templates for generating URLs for HTML pages"}, "groups": {"read": {"url": "https://hypothes.is/api/groups", "method": "GET", "desc": "Fetch the user's groups"}}, "annotation": {"hide": {"url": "https://hypothes.is/api/annotations/:id/hide", "method": "PUT", "desc": "Hide an annotation as a group moderator."}, "unhide": {"url": "https://hypothes.is/api/annotations/:id/hide", "method": "DELETE", "desc": "Unhide an annotation as a group moderator."}, "read": {"url": "https://hypothes.is/api/annotations/:id", "method": "GET", "desc": "Fetch an annotation"}, "create": {"url": "https://hypothes.is/api/annotations", "method": "POST", "desc": "Create an annotation"}, "update": {"url": "https://hypothes.is/api/annotations/:id", "method": "PATCH", "desc": "Update an annotation"}, "flag": {"url": "https://hypothes.is/api/annotations/:id/flag", "method": "PUT", "desc": "Flag an annotation for review."}, "delete": {"url": "https://hypothes.is/api/annotations/:id", "method": "DELETE", "desc": "Delete an annotation"}}}})
+      routeCache = retryPromiseOperation(() => getJSON(settings.apiUrl))
         .then((index) => index.links);
     }
     return routeCache;
@@ -47,8 +46,7 @@ function apiRoutes($http, settings) {
   function links() {
     if (!linkCache) {
       linkCache = routes().then(routes => {
-        // return getJSON(routes.links.url);
-        return Promise.resolve({"account.settings": "https://hypothes.is/account/settings", "forgot-password": "https://hypothes.is/forgot-password", "groups.new": "https://hypothes.is/groups/new", "help": "https://hypothes.is/docs/help", "oauth.authorize": "https://hypothes.is/oauth/authorize", "oauth.revoke": "https://hypothes.is/oauth/revoke", "search.tag": "https://hypothes.is/search?q=tag:\":tag\"", "signup": "https://hypothes.is/signup", "user": "https://hypothes.is/u/:user"})
+        return getJSON(routes.links.url);
       });
     }
     return linkCache;

@@ -154,7 +154,6 @@ function auth($http, $rootScope, $window, OAuthClient,
         revokeEndpoint: links['oauth.revoke'],
         tokenEndpoint: tokenUrl,
       });
-
       return client;
     });
   }

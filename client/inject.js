@@ -35,9 +35,10 @@ export function injectScript(doc, src) {
 
 export function injectAssets(doc, config, assets) {
   const manifest = config.manifest || {}
+  const root = config.assetRoot || "/"
   assets.forEach(function(path) {
     const entry = manifest[path] || path
-    const url = config.assetRoot + "build/" + entry
+    const url = `${root}build/${entry}`
     if (url.match(/\.css/)) {
       injectStylesheet(doc, url)
     } else {

@@ -1,7 +1,7 @@
 'use strict';
 
 const get = require('lodash.get');
-
+const events = require('../events');
 const urlUtil = require('../util/url-util');
 
 /**
@@ -174,19 +174,65 @@ function createAPICall($http, $q, links, route, tokenGetter) {
   };
 }
 
-function createAPICall2($http, $q, links, route, tokenGetter, fn) {
-  return (params, data, options={}) =>
-    new Promise((resolve, reject) => {
-      console.log(`>>> ${route}`, route, params, data, options)
-      const response = { data: fn(), token: "accessToken" }
-      console.log(`<<< ${route}`, response, data, params, data, options)
-      if (options.includeMetadata) {
-        return resolve(response)
-      } else {
-        return resolve(response.data)
+class Client {
+  constructor() {
+    this.port = null
+    this.id = 0
+    this.ready = this.connect()
+    this.requests = {}
+  }
+  connect() {
+    return new Promise(resolve => {
+      const onConnect = (event) => {
+        const {route, port} = event.data || {}
+        if (route === "hypothesis/connect" && port instanceof MessagePort) {
+          window.removeEventListener("message", onConnect)
+          port.addEventListener("message", this)
+          port.start()
+          this.port = port
+          resolve(port)
+        } else {
+          console.warn('unexpected message received', event.data)
+        }
       }
+
+      window.addEventListener("message", onConnect)
+      window.top.postMessage("hypothesis/connect", window.top.origin)
     })
+  }
+  handleEvent({data: {id, result}}) {
+    const request = this.requests[id]
+    if (request == null) {
+      console.warn(`Received response for unknown request ${id}`, result)
+    } else {
+      if (result.ok) {
+        request.resolve(result.value)
+      } else {
+        request.reject(result.error)
+      }
+    }
+  }
+  request(route, params, data, options) {
+    const id = `@${++this.id}`
+    const request = { id, route, params, data, options }
+    const response = this.receive(id)
+    const { port } = this
+    if (port) {
+      port.postMessage(request)
+    } else {
+      this.ready.then(port => port.postMessage(request))
+    }
+    return response
+  }
+  receive(id) {
+    return new Promise((resolve, reject) => {
+      this.requests[id] = {resolve, reject}
+    })
+  }
 }
+
+
+
 /**
  * API client for the Hypothesis REST API.
  *
@@ -208,13 +254,29 @@ function createAPICall2($http, $q, links, route, tokenGetter, fn) {
  * not use authentication.
  */
 // @ngInject
-function api($http, $q, apiRoutes, auth) {
+function api($http, $q, $rootScope, apiRoutes, auth) {
   const links = apiRoutes.routes();
-  function apiCall(route, fn) {
-    return createAPICall2($http, $q, links, route, auth.tokenGetter, fn);
+  const client = new Client()
+  const channel = new BroadcastChannel("service")
+  channel.onmessage = (message) => {
+    if (message.data === "ready") {
+      $rootScope.$broadcast(events.OAUTH_TOKENS_CHANGED);
+      // service.profile.read({ gozala: true }, null)
+    }
   }
 
-  return {
+  const apiCall = route => (params, data, options={}) =>
+    client.request(route, params, data, options).then(data => {
+      if (options.includeMetadata) {
+        return { data }
+      } else {
+        return data
+      }
+    }).catch(error => {
+      return $q.reject(translateResponseToError(error))
+    })
+
+  const service = {
     search: apiCall('search'),
     annotation: {
       create: apiCall('annotation.create'),
@@ -231,52 +293,19 @@ function api($http, $q, apiRoutes, auth) {
       },
     },
     groups: {
-      list: apiCall('group.list', () => [{
-        "name": "Public",
-        "links": {
-          "html": "https://hypothes.is/groups/__world__/public"
-        },
-        "id": "__world__",
-        "groupid": null,
-        "scoped": false,
-        "organization": {
-          "default": true,
-          "logo": "/client/organizations/__default__/logo.svg",
-          "id": "__default__",
-          "name": "Hypothesis"
-        },
-        "type": "open",
-        "public": true
-      }]),
+      list: apiCall('group.list'),
     },
     profile: {
       groups: apiCall('profile.groups'),
-      read: apiCall('profile.read', (params, data, options) => ({
-        "user_info": {
-          "display_name": "gozala"
-        },
-        "preferences": {},
-        "groups": [{
-          "public": true,
-          "name": "Public",
-          "id": "__world__"
-        }],
-        "userid": "acct:gozala@hypothes.is",
-        "authority": "hypothes.is",
-        "features": {
-          "api_render_user_info": true,
-          "filter_highlights": false,
-          "overlay_highlighter": false,
-          "embed_cachebuster": false,
-          "client_display_names": false
-        }
-      })),
+      read: apiCall('profile.read'),
       update: apiCall('profile.update'),
     },
 
     // The `links` endpoint is not included here. Clients should fetch these
     // from the `apiRoutes` service.
   };
+
+  return service
 }
 
 module.exports = api;

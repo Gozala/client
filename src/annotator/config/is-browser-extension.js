@@ -9,7 +9,7 @@
  *
  */
 function isBrowserExtension(app) {
-  return !(app.startsWith('http://') || app.startsWith('https://'));
+  return !(app.startsWith('http://') || app.startsWith('https://') || app.startsWith("dat://"));
 }
 
 module.exports = isBrowserExtension;

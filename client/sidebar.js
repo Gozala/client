@@ -1,8 +1,6 @@
 import { injectAssets, injectConfig, injectLink } from "./inject.js"
 
-export default (doc, config) => {
-  injectConfig(doc, config)
-
+export default (doc, config = {}) => {
   injectAssets(doc, config, [
     // Vendor code and polyfills required by app.bundle.js
     "scripts/raven.bundle.js",
